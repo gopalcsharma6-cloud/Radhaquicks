@@ -1,23 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RadhaQuicks - Local Delivery</title>
+<title>RadhaQuicks</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f6f7f9;color:#222}
-header{background:#ff6b00;color:white;padding:16px;position:sticky;top:0;z-index:5}
-.logo{font-size:25px;font-weight:bold}
-.tag{font-size:13px;margin-top:3px}
-.search{margin-top:12px;width:100%;padding:13px;border:0;border-radius:10px;font-size:16px}
-.cats{display:flex;gap:8px;overflow:auto;padding:12px;background:white}
-.cat{white-space:nowrap;border:1px solid #ddd;background:white;border-radius:20px;padding:9px 14px}
-.products{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
-.card{background:white;border-radius:14px;padding:10px;box-shadow:0 2px 8px #ddd}
-.pic{height:115px;background:#fff3e8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:55px}
-.name{font-weight:bold;margin-top:8px}
-.price{font-size:18px;font-weight:bold;margin:7px 0}
-.add{width:100%;padding:10px;border:0;border-radius:8px;background:#ff6b00;color:white;font-weight:bold}
-.cart{position:fixed;bottom:15px;left:12px;right:12px;background:#111;color:white;padding:15px;border-radius:12px;text-align:center;font-weight:bold;z-index:10}
-.cartbox{display:none;background:white;padding:18px;position:fixed;left:0;right:0;bottom:0;z-index:20;border-radius:20px 20
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f5f5f5;color:#222}
+header{background:#ff6500;color:white;padding:16px;position:sticky;top:0}
+h1{margin:0;font-size:25px}header p{margin:5px 0 12px}
+input{width:100%;padding:12px;border:0;border-radius:9px;font-size:16px}
+nav{display:flex;gap:8px;overflow:auto;background:white;padding:10px}
+nav button{padding:9px 14px;border:1px solid #ddd;border-radius:20px;background:white;white-space:nowrap}
+#items{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+.card{background:white;padding:10px;border-radius:12px;box-shadow:0 2px 7px #ddd}
+.pic{height:100px;background:#fff0e5;border-radius:9px;display:grid;place-items:center;font-size:48px}
+.price{font-size:19px;font-weight:bold;margin:7px 0}
+.add{width:100%;padding:10px;background:#ff6500;color:white;border:0;border-radius:8px;font-weight:bold}
+.cart{position:fixed;bottom:12px;left:12px;right:12px;padding:14px;background:#111;color:white;text-align:center;border-radius:12px;font-weight:bold}
+#box{display:none;position:fixed;bottom:0;background:white;width:100%;padding:18px;border-radius:18px 18px 0 0;box-shadow:0 -3px 15px #aaa;z-index:5}
+#box input{border:1px solid #ccc;margin:6px 0}
+.order{width:100%;padding:13px;background:#16a34a;color:white;border:0;border-radius:8px;font-weight:bold}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🛒 RadhaQuicks</h1>
+<p>Radhakund • Govardhan | Fast Local Delivery</p>
+<input id="search" placeholder="🔍 Search products" oninput="show()">
+</header>
+
+<nav>
+<button onclick="cat='All';show()">All</button>
+<button onclick="cat='Grocery';show()">🛒 Grocery</button>
+<button onclick="cat='Dairy';show()">🥛 Dairy</button>
+<button onclick="cat='Water';show()">💧 Water</button>
+<button onclick="cat='Drinks';show()">🥤 Drinks</button>
+<button onclick="cat='Snacks';show()">🍪 Snacks</button>
+</nav>
+
+<div id="items"></div>
+
+<div class="cart" onclick="openCart()">🛒 Cart: <span id="num">0</span> | ₹<span id="total">0</span></div>
+
+<div id="box">
+<button onclick="closeCart()">✕ Close</button>
+<h2>🛒 Your Cart</h2>
+<div id="list"></div>
+<input id="name" placeholder="आपका नाम">
+<input id="mobile" placeholder="Mobile Number">
+<input id="address" placeholder="Delivery Address">
+<button class="order" onclick="order()">Place Order - COD</button>
+</div>
+
+<script>
+let data=[
+["Amul Milk 1L",65,"Dairy","🥛"],
+["Curd 400g",40,"Dairy","🥣"],
+["Aquafina 1L",20,"Water","💧"],
+["Bisleri 1L",20,"Water","💧"],
+["Campa Cola",20,"Drinks","🥤"],
+["Frooti",10,"Drinks","🧃"],
+["Bread",50,"Grocery","🍞"],
+["Maggi",20,"Grocery","🍜"],
+["Biscuit",10,"Snacks","🍪"],
+["Chips",20,"Snacks","🥔"],
+["Namkeen",30,"Snacks","🥨"],
+["Coconut Water",160,"Drinks","🥥"]
+];
+let cart=[],cat="All";
+
+function show(){
+let q=document.getElementById("search").value.toLowerCase(),x="";
+data.forEach((p,i)=>{
+if((cat=="All"||p[2]==cat)&&p[0].toLowerCase().includes(q))
+x+=`<div class="card"><div class="pic">${p[3]}</div><b>${p[0]}</b><div class="price">₹${p[1]}</div><button class="add" onclick="add(${i})">+ Add</button></div>`;
+});
+document.getElementById("items").innerHTML=x;
+}
+function add(i){cart.push(i);update()}
+function update(){
+let t=0;cart.forEach(i=>t+=data[i][1]);
+document.getElementById("num").innerText=cart.length;
+document.getElementById("total").innerText=t;
+}
+function openCart(){
+let x="",t=0;
+cart.forEach(i=>{x+=`<p>${data[i][3]} ${data[i][0]} - ₹${data[i][1]}</p>`;t+=data[i][1]});
+document.getElementById("list").innerHTML=x||"<p>Cart खाली है</p>";
+document.getElementById("box").style.display="block";
+}
+function closeCart(){document.getElementById("box").style.display="none"}
+function order(){
+if(!cart.length)return alert("Cart खाली है");
+if(!name.value||!mobile.value||!address.value)return alert("नाम, मोबाइल और पता भरें");
+alert("🎉 Order received!\\nRadhaQuicks जल्द delivery करेगा.");
+}
+show();
+</script>
+</body>
+</html>
