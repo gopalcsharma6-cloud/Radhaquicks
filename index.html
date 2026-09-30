@@ -217,6 +217,46 @@ window.open(
 
 showProducts();
 </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyBNMmah4gPJh4gL5P-vtuzwgCsjUzicO_0",
+    authDomain: "radhaquicks.firebaseapp.com",
+    projectId: "radhaquicks",
+    storageBucket: "radhaquicks.firebasestorage.app",
+    messagingSenderId: "728533037366",
+    appId: "1:728533037366:web:8ec8b3ac1ef927f5a00397",
+    measurementId: "G-0ZHMW4DS1T"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.saveOrderToFirebase = async function(order) {
+    try {
+      await addDoc(collection(db, "orders"), {
+        customerName: order.customerName,
+        mobile: order.mobile,
+        address: order.address,
+        items: order.items,
+        total: order.total,
+        status: "New",
+        createdAt: serverTimestamp()
+      });
+
+      console.log("Order saved to Firebase");
+    } catch (error) {
+      console.error("Firebase order error:", error);
+      alert("Order save nahi ho paya. Please try again.");
+    }
+  };
+</script>
 </body>
 </html>
