@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RadhaQuicks Admin</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#f5f5f5;
+ color:#222;
+}
+header{
+ background:#0c831f;
+ color:white;
+ padding:18px;
+}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0}
+.stats{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:10px;
+ padding:12px;
+}
+.stat{
+ background:white;
+ padding:15px;
+ border-radius:12px;
+ box-shadow:0 2px 7px #ddd;
+}
+.stat b{font-size:23px}
+.tabs{
+ display:flex;
+ gap:8px;
+ overflow:auto;
+ padding:10px 12px;
+ background:white;
+}
+.tabs button{
+ padding:10px 14px;
+ border:1px solid #ddd;
+ border-radius:20px;
+ background:white;
+ white-space:nowrap;
+}
+.tabs button.active{
+ background:#0c831f;
+ color:white;
+}
+.orders{padding:12px}
+.order{
+ background:white;
+ border-radius:14px;
+ padding:15px;
+ margin-bottom:10px;
+ box-shadow:0 2px 7px #ddd;
+}
+.order h3{margin:0 0 8px}
+.order p{margin:6px 0;color:#555}
+.total{
+ font-size:19px;
+ font-weight:bold;
+ margin-top:10px;
+}
+.status{
+ padding:7px 10px;
+ border-radius:8px;
+ background:#fff3cd;
+ display:inline-block;
+ margin-top:8px;
+ font-weight:bold;
+}
+.actions{
+ display:flex;
+ gap:7px;
+ margin-top:12px;
+}
+.actions button{
+ flex:1;
+ padding:10px;
+ border:0;
+ border-radius:8px;
+ font-weight:bold;
+}
+.accept{background:#0c831f;color:white}
+.reject{background:#fee2e2;color:#b91c1c}
+.empty{
+ text-align:center;
+ padding:50px 15px;
+ color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🛒 RadhaQuicks Admin</h1>
+<p>Radhakund • Order Management</p>
+</header>
+
+<div class="stats">
+<div class="stat">
+<small>New Orders</small><br>
+<b id="newCount">0</b>
+</div>
+
+<div class="stat">
+<small>Today's Sales</small><br>
+<b>₹<span id="sales">0</span></b>
+</div>
+</div>
+
+<div class="tabs">
+<button class="active" onclick="showOrders('All',this)">All</button>
+<button onclick="showOrders('New',this)">New</button>
+<button onclick="showOrders('Accepted',this)">Accepted</button>
+<button onclick="showOrders('Preparing',this)">Preparing</button>
+<button onclick="showOrders('Out for Delivery',this)">Delivery</button>
+<button onclick="showOrders('Delivered',this)">Delivered</button>
+</div>
+
+<div class="orders" id="orders"></div>
+
+<script>
+
+let orders = JSON.parse(localStorage.getItem("radhaOrders") || "[]");
+
+let currentFilter="All";
+
+function save(){
+ localStorage.setItem("radhaOrders",JSON.stringify(orders));
+}
+
+function showOrders(filter="All",btn=null){
+
+ currentFilter=filter;
+
+ if(btn){
+  document.querySelectorAll(".tabs button")
+  .forEach(b=>b.classList.remove("active"));
+
+  btn.classList.add("active");
+ }
+
+ let list=orders.filter(o =>
+  filter==="All" || o.status===filter
+ );
+
+ let html="";
+
+ if(list.length===0){
+  html='<div class="empty">📦<br><br>अभी कोई order नहीं है</div>';
+ }else{
+
+  list.forEach(o=>{
+
+   html+=`
+   <div class="order">
+
+   <h3>Order #${o.id}</h3>
+
+   <p>👤 <b>${o.name}</b></p>
+
+   <p>📱 ${o.mobile}</p>
+
+   <p>📍 ${o.address}</p>
+
+   <p>🛍️ ${o.items}</p>
+
+   <div class="total">
+   Total: ₹${o.total}
+   </div>
+
+   <div class="status">
+   ${o.status}
+   </div>
+
+   <div class="actions">
+
+   ${o.status==="New"
+   ?`<button class="accept"
+   onclick="changeStatus(${o.id},'Accepted')">
+   Accept
+   </button>
+   <button class="reject"
+   onclick="changeStatus(${o.id},'Rejected')">
+   Reject
+   </button>`
+   :""}
+
+   ${o.status==="Accepted"
+   ?`<button class="accept"
+   onclick="changeStatus(${o.id},'Preparing')">
+   Start Preparing
+   </button>`
+   :""}
+
+   ${o.status==="Preparing"
+   ?`<button class="accept"
+   onclick="changeStatus(${o.id},'Out for Delivery')">
+   Out for Delivery
+   </button>`
+   :""}
+
+   ${o.status==="Out for Delivery"
+   ?`<button class="accept"
+   onclick="changeStatus(${o.id},'Delivered')">
+   Delivered
+   </button>`
+   :""}
+
+   </div>
+
+   </div>
+   `;
+  });
+ }
+
+ document.getElementById("orders").innerHTML=html;
+
+ updateStats();
+}
+
+function changeStatus(id,status){
+
+ let order=orders.find(o=>o.id===id);
+
+ if(order){
+  order.status=status;
+  save();
+  showOrders(currentFilter);
+ }
+}
+
+function updateStats(){
+
+ let newOrders=orders.filter(o=>o.status==="New").length;
+
+ let sales=orders
+ .filter(o=>o.status==="Delivered")
+ .reduce((sum,o)=>sum+Number(o.total||0),0);
+
+ document.getElementById("newCount").innerText=newOrders;
+ document.getElementById("sales").innerText=sales;
+}
+
+showOrders();
+
+</script>
+
+</body>
+</html>
