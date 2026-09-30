@@ -305,10 +305,12 @@ window.login = async function(){
 
   }catch(e){
 
-    error.textContent =
-      "Email ya password galat hai.";
+  error.textContent =
+    "Firebase Error: " + e.code;
 
-  }
+  console.error(e);
+
+}
 
 };
 
