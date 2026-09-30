@@ -1,255 +1,676 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RadhaQuicks Admin</title>
 
 <style>
 *{box-sizing:border-box}
+
 body{
- margin:0;
- font-family:Arial,sans-serif;
- background:#f5f5f5;
- color:#222;
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f6f8;
+  color:#222;
 }
+
 header{
- background:#0c831f;
- color:white;
- padding:18px;
+  background:#16833a;
+  color:white;
+  padding:18px;
+  position:sticky;
+  top:0;
+  z-index:10;
 }
-header h1{margin:0;font-size:24px}
-header p{margin:5px 0 0}
+
+header h2{
+  margin:0 0 5px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:15px;
+}
+
+.login{
+  max-width:420px;
+  margin:80px auto;
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 3px 15px #ccc;
+}
+
+input{
+  width:100%;
+  padding:13px;
+  margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:16px;
+}
+
+button{
+  border:0;
+  border-radius:8px;
+  padding:11px 15px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.login button{
+  width:100%;
+  background:#16833a;
+  color:white;
+  margin-top:10px;
+}
+
+.logout{
+  background:white;
+  color:#16833a;
+  float:right;
+}
+
 .stats{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:10px;
- padding:12px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:15px 0;
 }
+
 .stat{
- background:white;
- padding:15px;
- border-radius:12px;
- box-shadow:0 2px 7px #ddd;
+  background:white;
+  padding:18px;
+  border-radius:12px;
+  box-shadow:0 2px 8px #ddd;
 }
-.stat b{font-size:23px}
+
+.stat b{
+  display:block;
+  font-size:25px;
+  margin-top:5px;
+}
+
 .tabs{
- display:flex;
- gap:8px;
- overflow:auto;
- padding:10px 12px;
- background:white;
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding:8px 0;
 }
+
 .tabs button{
- padding:10px 14px;
- border:1px solid #ddd;
- border-radius:20px;
- background:white;
- white-space:nowrap;
+  background:white;
+  white-space:nowrap;
 }
+
 .tabs button.active{
- background:#0c831f;
- color:white;
+  background:#16833a;
+  color:white;
 }
-.orders{padding:12px}
+
 .order{
- background:white;
- border-radius:14px;
- padding:15px;
- margin-bottom:10px;
- box-shadow:0 2px 7px #ddd;
+  background:white;
+  margin:12px 0;
+  padding:16px;
+  border-radius:14px;
+  box-shadow:0 2px 8px #ddd;
 }
-.order h3{margin:0 0 8px}
-.order p{margin:6px 0;color:#555}
+
+.order h3{
+  margin:0 0 8px;
+}
+
+.items{
+  background:#f5f5f5;
+  padding:10px;
+  border-radius:8px;
+  margin:10px 0;
+}
+
+.item{
+  padding:5px 0;
+  border-bottom:1px solid #ddd;
+}
+
 .total{
- font-size:19px;
- font-weight:bold;
- margin-top:10px;
+  font-size:20px;
+  font-weight:bold;
+  margin:10px 0;
 }
+
 .status{
- padding:7px 10px;
- border-radius:8px;
- background:#fff3cd;
- display:inline-block;
- margin-top:8px;
- font-weight:bold;
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  background:#e8f5e9;
+  color:#16833a;
+  font-weight:bold;
+  margin-bottom:10px;
 }
+
 .actions{
- display:flex;
- gap:7px;
- margin-top:12px;
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
 }
+
 .actions button{
- flex:1;
- padding:10px;
- border:0;
- border-radius:8px;
- font-weight:bold;
+  background:#16833a;
+  color:white;
 }
-.accept{background:#0c831f;color:white}
-.reject{background:#fee2e2;color:#b91c1c}
+
 .empty{
- text-align:center;
- padding:50px 15px;
- color:#777;
+  text-align:center;
+  background:white;
+  padding:30px;
+  border-radius:12px;
+  margin-top:20px;
+}
+
+.hidden{
+  display:none;
+}
+
+.error{
+  color:#d32f2f;
+  margin-top:10px;
+}
+
+.small{
+  color:#777;
+  font-size:13px;
 }
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
+<div id="loginScreen" class="login">
+  <h2>🔐 RadhaQuicks Admin</h2>
+  <p>Admin account se login karein.</p>
+
+  <input id="email" type="email" placeholder="Admin Email">
+
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+
+  <div id="loginError" class="error"></div>
+</div>
+
+
+<!-- ADMIN PANEL -->
+<div id="adminScreen" class="hidden">
+
 <header>
-<h1>🛒 RadhaQuicks Admin</h1>
-<p>Radhakund • Order Management</p>
+  <button class="logout" onclick="logout()">Logout</button>
+  <h2>RadhaQuicks Admin</h2>
+  <div>📦 Order Management</div>
 </header>
 
-<div class="stats">
-<div class="stat">
-<small>New Orders</small><br>
-<b id="newCount">0</b>
+<div class="container">
+
+  <div class="stats">
+    <div class="stat">
+      New Orders
+      <b id="newCount">0</b>
+    </div>
+
+    <div class="stat">
+      Today's Sales
+      <b id="todaySales">₹0</b>
+    </div>
+  </div>
+
+
+  <div class="tabs">
+    <button class="active" onclick="setFilter('All',this)">All</button>
+    <button onclick="setFilter('New',this)">New</button>
+    <button onclick="setFilter('Accepted',this)">Accepted</button>
+    <button onclick="setFilter('Preparing',this)">Preparing</button>
+    <button onclick="setFilter('Out for Delivery',this)">Out for Delivery</button>
+    <button onclick="setFilter('Delivered',this)">Delivered</button>
+  </div>
+
+
+  <div id="orders"></div>
+
+</div>
 </div>
 
-<div class="stat">
-<small>Today's Sales</small><br>
-<b>₹<span id="sales">0</span></b>
-</div>
-</div>
 
-<div class="tabs">
-<button class="active" onclick="showOrders('All',this)">All</button>
-<button onclick="showOrders('New',this)">New</button>
-<button onclick="showOrders('Accepted',this)">Accepted</button>
-<button onclick="showOrders('Preparing',this)">Preparing</button>
-<button onclick="showOrders('Out for Delivery',this)">Delivery</button>
-<button onclick="showOrders('Delivered',this)">Delivered</button>
-</div>
+<script type="module">
 
-<div class="orders" id="orders"></div>
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
-<script>
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
-let orders = JSON.parse(localStorage.getItem("radhaOrders") || "[]");
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  updateDoc
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-let currentFilter="All";
 
-function save(){
- localStorage.setItem("radhaOrders",JSON.stringify(orders));
+/* FIREBASE CONFIG */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBNMmah4gPJh4gL5P-vtuzwgCsjUzicO_0",
+  authDomain: "radhaquicks.firebaseapp.com",
+  projectId: "radhaquicks",
+  storageBucket: "radhaquicks.firebasestorage.app",
+  messagingSenderId: "728533037366",
+  appId: "1:728533037366:web:8ec8b3ac1ef927f5a00397",
+  measurementId: "G-0ZHMW4DS1T"
+};
+
+
+/* START FIREBASE */
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const db = getFirestore(app);
+
+
+/* ADMIN UID */
+
+const ADMIN_UID = "2OjTRyo42FaXjzIZ5WWv4QALT0K3";
+
+
+let allOrders = [];
+let currentFilter = "All";
+let unsubscribeOrders = null;
+
+
+/* LOGIN */
+
+window.login = async function(){
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const errorBox =
+    document.getElementById("loginError");
+
+  errorBox.innerText = "";
+
+  if(!email || !password){
+
+    errorBox.innerText =
+      "Email aur password dono bhariye.";
+
+    return;
+  }
+
+  try{
+
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    errorBox.innerText =
+      "Login failed. Email/password check karein.";
+
+  }
+
+};
+
+
+/* AUTH CHECK */
+
+onAuthStateChanged(auth, user => {
+
+  if(user){
+
+    if(user.uid !== ADMIN_UID){
+
+      alert("Is account ko Admin access nahi hai.");
+
+      signOut(auth);
+
+      return;
+    }
+
+    document
+      .getElementById("loginScreen")
+      .classList.add("hidden");
+
+    document
+      .getElementById("adminScreen")
+      .classList.remove("hidden");
+
+    loadOrders();
+
+  }else{
+
+    document
+      .getElementById("loginScreen")
+      .classList.remove("hidden");
+
+    document
+      .getElementById("adminScreen")
+      .classList.add("hidden");
+
+  }
+
+});
+
+
+/* LOGOUT */
+
+window.logout = function(){
+
+  signOut(auth);
+
+};
+
+
+/* LOAD REAL ORDERS */
+
+function loadOrders(){
+
+  if(unsubscribeOrders)
+    unsubscribeOrders();
+
+  const q = query(
+    collection(db,"orders"),
+    orderBy("createdAt","desc")
+  );
+
+  unsubscribeOrders = onSnapshot(
+    q,
+    snapshot => {
+
+      allOrders = [];
+
+      snapshot.forEach(item => {
+
+        allOrders.push({
+          id:item.id,
+          ...item.data()
+        });
+
+      });
+
+      renderOrders();
+
+    },
+    error => {
+
+      console.error(error);
+
+      document.getElementById("orders").innerHTML =
+        `<div class="empty">
+          Orders load nahi ho pa rahe.
+          <br><br>
+          ${error.message}
+        </div>`;
+
+    }
+  );
+
 }
 
-function showOrders(filter="All",btn=null){
 
- currentFilter=filter;
+/* FILTER */
 
- if(btn){
-  document.querySelectorAll(".tabs button")
-  .forEach(b=>b.classList.remove("active"));
+window.setFilter = function(filter,button){
 
-  btn.classList.add("active");
- }
+  currentFilter = filter;
 
- let list=orders.filter(o =>
-  filter==="All" || o.status===filter
- );
+  document
+    .querySelectorAll(".tabs button")
+    .forEach(b => b.classList.remove("active"));
 
- let html="";
+  button.classList.add("active");
 
- if(list.length===0){
-  html='<div class="empty">📦<br><br>अभी कोई order नहीं है</div>';
- }else{
+  renderOrders();
 
-  list.forEach(o=>{
+};
 
-   html+=`
-   <div class="order">
 
-   <h3>Order #${o.id}</h3>
+/* RENDER */
 
-   <p>👤 <b>${o.name}</b></p>
+function renderOrders(){
 
-   <p>📱 ${o.mobile}</p>
+  const box =
+    document.getElementById("orders");
 
-   <p>📍 ${o.address}</p>
+  let filtered = allOrders;
 
-   <p>🛍️ ${o.items}</p>
+  if(currentFilter !== "All"){
 
-   <div class="total">
-   Total: ₹${o.total}
-   </div>
+    filtered =
+      allOrders.filter(
+        o => o.status === currentFilter
+      );
 
-   <div class="status">
-   ${o.status}
-   </div>
+  }
 
-   <div class="actions">
+  let newOrders =
+    allOrders.filter(
+      o => o.status === "New"
+    ).length;
 
-   ${o.status==="New"
-   ?`<button class="accept"
-   onclick="changeStatus(${o.id},'Accepted')">
-   Accept
-   </button>
-   <button class="reject"
-   onclick="changeStatus(${o.id},'Rejected')">
-   Reject
-   </button>`
-   :""}
+  document.getElementById("newCount")
+    .innerText = newOrders;
 
-   ${o.status==="Accepted"
-   ?`<button class="accept"
-   onclick="changeStatus(${o.id},'Preparing')">
-   Start Preparing
-   </button>`
-   :""}
 
-   ${o.status==="Preparing"
-   ?`<button class="accept"
-   onclick="changeStatus(${o.id},'Out for Delivery')">
-   Out for Delivery
-   </button>`
-   :""}
+  let sales = 0;
 
-   ${o.status==="Out for Delivery"
-   ?`<button class="accept"
-   onclick="changeStatus(${o.id},'Delivered')">
-   Delivered
-   </button>`
-   :""}
+  const today =
+    new Date().toDateString();
 
-   </div>
+  allOrders.forEach(o => {
 
-   </div>
-   `;
+    if(!o.createdAt) return;
+
+    const date =
+      o.createdAt.toDate();
+
+    if(date.toDateString() === today){
+
+      sales += Number(o.total || 0);
+
+    }
+
   });
- }
 
- document.getElementById("orders").innerHTML=html;
+  document.getElementById("todaySales")
+    .innerText = "₹" + sales;
 
- updateStats();
+
+  if(filtered.length === 0){
+
+    box.innerHTML =
+      `<div class="empty">
+        📦 Is category mein koi order nahi hai.
+      </div>`;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    filtered.map(order => {
+
+      let itemsHTML = "";
+
+      if(Array.isArray(order.items)){
+
+        itemsHTML =
+          order.items.map(item => {
+
+            return `
+              <div class="item">
+                ${item.name || "Item"}
+                - ₹${item.price || 0}
+              </div>
+            `;
+
+          }).join("");
+
+      }
+
+
+      let time = "";
+
+      if(order.createdAt){
+
+        time =
+          order.createdAt.toDate()
+          .toLocaleString("en-IN");
+
+      }
+
+
+      return `
+        <div class="order">
+
+          <h3>
+            👤 ${escapeHTML(order.customerName || "Customer")}
+          </h3>
+
+          <div>
+            📱 ${escapeHTML(order.mobile || "")}
+          </div>
+
+          <div>
+            📍 ${escapeHTML(order.address || "")}
+          </div>
+
+          <div class="small">
+            🕐 ${time}
+          </div>
+
+          <br>
+
+          <span class="status">
+            ${escapeHTML(order.status || "New")}
+          </span>
+
+          <div class="items">
+            <b>🛒 Items</b>
+            ${itemsHTML}
+          </div>
+
+          <div class="total">
+            Total: ₹${order.total || 0}
+          </div>
+
+          <div class="actions">
+
+            ${
+              order.status === "New"
+              ?
+              `<button onclick="changeStatus('${order.id}','Accepted')">
+                Accept
+              </button>`
+              : ""
+            }
+
+            ${
+              order.status === "Accepted"
+              ?
+              `<button onclick="changeStatus('${order.id}','Preparing')">
+                Preparing
+              </button>`
+              : ""
+            }
+
+            ${
+              order.status === "Preparing"
+              ?
+              `<button onclick="changeStatus('${order.id}','Out for Delivery')">
+                Out for Delivery
+              </button>`
+              : ""
+            }
+
+            ${
+              order.status === "Out for Delivery"
+              ?
+              `<button onclick="changeStatus('${order.id}','Delivered')">
+                Delivered
+              </button>`
+              : ""
+            }
+
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
+
 }
 
-function changeStatus(id,status){
 
- let order=orders.find(o=>o.id===id);
+/* CHANGE ORDER STATUS */
 
- if(order){
-  order.status=status;
-  save();
-  showOrders(currentFilter);
- }
+window.changeStatus = async function(orderId,newStatus){
+
+  try{
+
+    await updateDoc(
+      doc(db,"orders",orderId),
+      {
+        status:newStatus
+      }
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Status update nahi hua: "
+      + error.message
+    );
+
+  }
+
+};
+
+
+/* BASIC HTML SAFETY */
+
+function escapeHTML(value){
+
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
 }
-
-function updateStats(){
-
- let newOrders=orders.filter(o=>o.status==="New").length;
-
- let sales=orders
- .filter(o=>o.status==="Delivered")
- .reduce((sum,o)=>sum+Number(o.total||0),0);
-
- document.getElementById("newCount").innerText=newOrders;
- document.getElementById("sales").innerText=sales;
-}
-
-showOrders();
 
 </script>
 
