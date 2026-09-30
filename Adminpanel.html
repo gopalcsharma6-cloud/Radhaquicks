@@ -1,1 +1,287 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RadhaQuicks Admin</title>
 
+<style>
+body{margin:0;font-family:Arial;background:#f5f6f8;color:#222}
+header{background:#16833a;color:white;padding:18px}
+.container{max-width:900px;margin:auto;padding:15px}
+.login,.order,.stat{background:white;padding:20px;border-radius:14px;margin:15px 0;box-shadow:0 2px 8px #ddd}
+input{width:100%;padding:13px;margin:8px 0;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;font-size:16px}
+button{border:0;border-radius:8px;padding:11px 15px;background:#16833a;color:white;margin:4px}
+.logout{float:right;background:white;color:#16833a}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat b{display:block;font-size:25px;margin-top:5px}
+.tabs{display:flex;gap:5px;overflow:auto}
+.tabs button{white-space:nowrap;background:white;color:#222}
+.tabs .active{background:#16833a;color:white}
+.items{background:#f5f5f5;padding:10px;border-radius:8px}
+.status{font-weight:bold;color:#16833a}
+.hidden{display:none}
+.error{color:red}
+</style>
+</head>
+
+<body>
+
+<div id="loginScreen" class="login">
+<h2>🔐 RadhaQuicks Admin</h2>
+<p>Admin account se login karein.</p>
+<input id="email" type="email" placeholder="Admin Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<div id="loginError" class="error"></div>
+</div>
+
+<div id="adminScreen" class="hidden">
+
+<header>
+<button class="logout" onclick="logout()">Logout</button>
+<h2>RadhaQuicks Admin</h2>
+📦 Order Management
+</header>
+
+<div class="container">
+
+<div class="stats">
+<div class="stat">New Orders <b id="newCount">0</b></div>
+<div class="stat">Today's Sales <b id="todaySales">₹0</b></div>
+</div>
+
+<div class="tabs">
+<button class="active" onclick="setFilter('All',this)">All</button>
+<button onclick="setFilter('New',this)">New</button>
+<button onclick="setFilter('Accepted',this)">Accepted</button>
+<button onclick="setFilter('Preparing',this)">Preparing</button>
+<button onclick="setFilter('Out for Delivery',this)">Delivery</button>
+<button onclick="setFilter('Delivered',this)">Delivered</button>
+</div>
+
+<div id="orders"></div>
+
+</div>
+</div>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+import {
+getAuth,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+query,
+orderBy,
+onSnapshot,
+doc,
+updateDoc
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyBNMmah4gPJh4gL5P-vtuzwgCsjUzicO_0",
+authDomain:"radhaquicks.firebaseapp.com",
+projectId:"radhaquicks",
+storageBucket:"radhaquicks.firebasestorage.app",
+messagingSenderId:"728533037366",
+appId:"1:728533037366:web:8ec8b3ac1ef927f5a00397",
+measurementId:"G-0ZHMW4DS1T"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const ADMIN_UID="2OjTRyo42FaXjzIZ5WWv4QALT0K3";
+
+let orders=[];
+let filter="All";
+
+window.login=async function(){
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+
+try{
+await signInWithEmailAndPassword(auth,email,password);
+}catch(e){
+document.getElementById("loginError").innerText=
+"Login failed. Email/password check karein.";
+}
+};
+
+onAuthStateChanged(auth,user=>{
+
+if(!user){
+document.getElementById("loginScreen").classList.remove("hidden");
+document.getElementById("adminScreen").classList.add("hidden");
+return;
+}
+
+if(user.uid!==ADMIN_UID){
+alert("Is account ko Admin access nahi hai.");
+signOut(auth);
+return;
+}
+
+document.getElementById("loginScreen").classList.add("hidden");
+document.getElementById("adminScreen").classList.remove("hidden");
+
+loadOrders();
+
+});
+
+window.logout=()=>signOut(auth);
+
+function loadOrders(){
+
+const q=query(
+collection(db,"orders"),
+orderBy("createdAt","desc")
+);
+
+onSnapshot(q,snapshot=>{
+
+orders=[];
+
+snapshot.forEach(x=>{
+orders.push({id:x.id,...x.data()});
+});
+
+render();
+
+},error=>{
+
+document.getElementById("orders").innerHTML=
+"<div class='order'>Orders load nahi ho pa rahe.<br><br>"+
+error.message+"</div>";
+
+});
+
+}
+
+window.setFilter=function(f,btn){
+
+filter=f;
+
+document.querySelectorAll(".tabs button")
+.forEach(x=>x.classList.remove("active"));
+
+btn.classList.add("active");
+
+render();
+
+};
+
+function render(){
+
+let list=filter==="All"
+?orders
+:orders.filter(x=>x.status===filter);
+
+document.getElementById("newCount").innerText=
+orders.filter(x=>x.status==="New").length;
+
+let sales=0;
+
+orders.forEach(x=>{
+if(x.total)sales+=Number(x.total);
+});
+
+document.getElementById("todaySales").innerText="₹"+sales;
+
+const box=document.getElementById("orders");
+
+if(!list.length){
+box.innerHTML="<div class='order'>📦 Koi order nahi hai.</div>";
+return;
+}
+
+box.innerHTML=list.map(o=>{
+
+let items="";
+
+if(Array.isArray(o.items)){
+items=o.items.map(i=>
+`<div>${safe(i.name)} - ₹${i.price||0}</div>`
+).join("");
+}
+
+let action="";
+
+if(o.status==="New")
+action=`<button onclick="changeStatus('${o.id}','Accepted')">Accept</button>`;
+
+if(o.status==="Accepted")
+action=`<button onclick="changeStatus('${o.id}','Preparing')">Preparing</button>`;
+
+if(o.status==="Preparing")
+action=`<button onclick="changeStatus('${o.id}','Out for Delivery')">Out for Delivery</button>`;
+
+if(o.status==="Out for Delivery")
+action=`<button onclick="changeStatus('${o.id}','Delivered')">Delivered</button>`;
+
+return `
+<div class="order">
+<h3>👤 ${safe(o.customerName||"Customer")}</h3>
+<div>📱 ${safe(o.mobile||"")}</div>
+<div>📍 ${safe(o.address||"")}</div>
+<p class="status">Status: ${safe(o.status||"New")}</p>
+
+<div class="items">
+<b>🛒 Items</b>
+${items}
+</div>
+
+<h3>Total: ₹${o.total||0}</h3>
+
+${action}
+
+</div>`;
+
+}).join("");
+
+}
+
+window.changeStatus=async function(id,status){
+
+try{
+
+await updateDoc(
+doc(db,"orders",id),
+{status:status}
+);
+
+}catch(e){
+
+alert("Status update nahi hua.");
+
+}
+
+};
+
+function safe(x){
+
+return String(x)
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+</script>
+
+</body>
+</html>
