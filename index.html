@@ -198,10 +198,21 @@ if(!n||!m||!a){
 alert("कृपया नाम, मोबाइल और पता भरें");
 return;
 }
+let orderText =
+"🛒 *RadhaQuicks Order*\n\n" +
+"👤 Customer: " + n +
+"\n📱 Mobile: " + m +
+"\n📍 Address: " + a +
+"\n\n🛍️ *Items:*\n" +
+cart.map(i => "• " + products[i][0] + " - ₹" + products[i][2]).join("\n") +
+"\n\n💰 Total: ₹" + cart.reduce((sum,i) => sum + products[i][2], 0);
 
-alert("🎉 Order तैयार है!\n\nCustomer: "+n+
-"\nMobile: "+m+
-"\n\nअगले चरण में इसे आपके वास्तविक Admin/WhatsApp Order System से जोड़ेंगे।");
+let adminNumber = "+917068014355";
+
+window.open(
+  "https://wa.me/" + adminNumber + "?text=" + encodeURIComponent(orderText),
+  "_blank"
+);
 }
 
 showProducts();
