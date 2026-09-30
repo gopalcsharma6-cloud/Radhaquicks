@@ -206,7 +206,16 @@ let orderText =
 "\n\n🛍️ *Items:*\n" +
 cart.map(i => "• " + products[i][0] + " - ₹" + products[i][2]).join("\n") +
 "\n\n💰 Total: ₹" + cart.reduce((sum,i) => sum + products[i][2], 0);
-
+window.saveOrderToFirebase({
+  customerName: n,
+  mobile: m,
+  address: a,
+  items: cart.map(i => ({
+    name: products[i][0],
+    price: products[i][2]
+  })),
+  total: cart.reduce((sum, i) => sum + products[i][2], 0)
+});
 let adminNumber = "+917068014355";
 
 window.open(
